@@ -9,6 +9,30 @@
     <script src="../js/处理data参数.js"></script>
 </head>
 <body>
-    
+    <script>
+        packaging({
+                method: 'GET',
+                url: 'http://www.liulongbin.top:3006/api/getbooks',
+                data: {
+                    id: 1
+                },
+                success: function (res) { //成功的回调函数
+                    console.log(res)	//打印数据
+                }
+            })
+
+        // packaging({
+        //         method: 'POST',
+        //         url: 'http://www.liulongbin.top:3006/api/addbook',
+        //         data: {
+        //             bookname: 'JS百炼成仙',
+        //             author: '杨逸飞',
+        //             publisher: '人民出版社'
+        //         },
+        //         success: function (res) { //成功的回调函数
+        //             console.log(res)	//打印数据
+        //         }
+        //     })
+    </script>
 </body>
 </html>

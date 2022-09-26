@@ -124,7 +124,7 @@ xhr.open('GET'，'http://www.liulongbin.top:3006/api/getbooks?id=1')
     packaging({
         method: '请求类型',
         url: '请求地址',
-        data: {/* 请求参数对象 */}，
+        data: {/* 请求参数对象 */},
         success: function(res) { //成功的回调函数
         console.log(res)	//打印数据
     } 
@@ -140,4 +140,257 @@ packaging函数中的参数有：
 - url：请求的URL地址
 - data：请求携带的数据
 - success：请求成功之后的回调函数
+
+### 3. 处理data参数
+
+在发起AJAX请求之前，要把 data 对象处理成查询字符串才能提交给服务器。
+
+```javascript
+/**
+ * @description: 把data对象，转化成查询字符串的形式，从而提交给服务器 
+ * @param {data}  需要发送给服务器的对象
+ * @return {string} 返回拼接好的查询字符串 name=zhangsan&age=10
+ */
+function resolveData(data) {
+    var arr = [];
+    for (var k in data) {
+        arr.push(k + "=" + data[k]);
+    }
+    return arr.join("&");
+}
+```
+
+### 4. 定义AJAX函数
+
+```javascript
+/**
+ * @description: xhr对象请求服务器上的数据
+ * @param {*} options 是服务器传过来的对象参数
+ * @return {*}
+ */
+function packaging(options) {
+    var xhr = new XMLHttpRequest();
+
+    // 把外界传递过来的对象转换成查询字符串
+    var qs = resolveData(options.data);
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var result = JSON.parse(xhr.responseText);
+            options.success(result)
+        }
+    }
+}
+```
+
+### 5. 判断请求的类型
+
+不同的请求类型，对应xhr对象不同的操作，需要对请求类型进行 if ... else ... 操作。
+
+```javascript
+	if (options.method.toUpperCase() === 'GET') {
+        // 发起GET请求
+        xhr.open(options.method, options.url + '?' + qs);
+        xhr.send();
+    }else if (options.method.toUpperCase() === 'POST') {
+        // 发情POST请求
+        xhr.open(options.method, options.url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(qs);
+    }
+```
+
+### 6. 完成封装
+
+处理data参数的 js 函数：
+
+```javascript
+/**
+ * @description: 把data对象，转化成查询字符串的形式，从而提交给服务器 
+ * @param {data}  需要发送给服务器的对象
+ * @return {string} 返回拼接好的查询字符串 name=zhangsan&age=10
+ */
+function resolveData(data) {
+    var arr = [];
+    for (var k in data) {
+        arr.push(k + "=" + data[k]);
+    }
+    return arr.join("&");
+}
+
+// var res = resolveData({name: 'zhangsan', age: 10})
+// console.log(res);
+
+/**
+ * @description: xhr对象请求服务器上的数据
+ * @param {*} options 是服务器传过来的对象参数
+ * @return {*}
+ */
+function packaging(options) {
+    var xhr = new XMLHttpRequest();
+
+    // 把外界传递过来的对象转换成查询字符串
+    var qs = resolveData(options.data);
+
+    // 判断请求类型
+    if (options.method.toUpperCase() === 'GET') {
+        // 发起GET请求
+        xhr.open(options.method, options.url + '?' + qs);
+        xhr.send();
+    }else if (options.method.toUpperCase() === 'POST') {
+        // 发情POST请求
+        xhr.open(options.method, options.url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(qs);
+    }
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var result = JSON.parse(xhr.responseText);
+            options.success(result)
+        }
+    }
+}
+```
+
+使用封装函数的 html：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- 1. 导入自定义的ajax函数库 -->
+    <script src="../js/处理data参数.js"></script>
+</head>
+<body>
+    <script>
+        packaging({
+                method: 'GET',
+                url: 'http://www.liulongbin.top:3006/api/getbooks',
+                data: {
+                    id: 1
+                },
+                success: function (res) { //成功的回调函数
+                    console.log(res)	//打印数据
+                }
+            })
+
+        // packaging({
+        //         method: 'POST',
+        //         url: 'http://www.liulongbin.top:3006/api/addbook',
+        //         data: {
+        //             bookname: 'JS百炼成仙',
+        //             author: '杨逸飞',
+        //             publisher: '人民出版社'
+        //         },
+        //         success: function (res) { //成功的回调函数
+        //             console.log(res)	//打印数据
+        //         }
+        //     })
+    </script>
+</body>
+</html>
+```
+
+## XMLHttpRequest Level 2新特性
+
+### 1. timeout
+
+AJAX有时操作很耗时，新版本增加了 timeout 属性设置超时限制，过了这个时限自动停止HTTP请求。
+
+与之配套的 timeout 事件可以用来指定回调函数。
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        var xhr = new XMLHttpRequest();
+
+        // 设置超时时限 30毫秒
+        xhr.timeout = 30;
+        // 设置超时处理函数
+        xhr.ontimeout = function() {
+            console.log('请求超时了');
+        }
+
+        xhr.open('GET', 'http://www.liulongbin.top:3006/api/getooks');
+        xhr.send();
+        
+        xhr.onreadystatechange = function() {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText);
+            }
+        }
+    </script>
+</body>
+</html>
+```
+
+### 2. FormData对象管理表单数据
+
+（1）通过FormData提交表单中的数据
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="form1">
+        <input type="text" name="uname" autocomplete="off">
+        <input type="password" name="upwd">
+        <button type="submit">提交</button>
+    </form>
+    
+    <script>
+        // 1. 创建FormData实例
+        // var fd = new FormData();
+        // 2. 调用append函数向FormData表单中添加数据
+        // fd.append('uname', 'zs');
+        // fd.append('upwd', '111');
+
+        // 1. 通过DOM操作获取表单
+        var form = document.querySelector('#form1');
+        // 2. 监听提交事件
+        form.addEventListener('submit', function(e) {
+            // 阻止表单的默认提交行为
+            e.preventDefault();
+            // 创建FormData实例
+            var fd = new FormData(form);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://www.liulongbin.top:3006/api/formdata');
+            xhr.send(fd);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(xhr.responseText);
+                }
+            }
+        }) 
+    </script>
+</body>
+</html>
+```
+
+（2）上传文件
+
+```html
+
+```
 
