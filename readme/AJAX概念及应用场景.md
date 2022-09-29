@@ -391,6 +391,158 @@ AJAX有时操作很耗时，新版本增加了 timeout 属性设置超时限制�
 （2）上传文件
 
 ```html
+<body>
+    <!-- 文件选择器 -->
+    <input type="file" id="file1">
+    <!-- 上传按钮 -->
+    <button id="btnUpload">上传</button>
+    <!-- 显示上传成功以后的图片 -->
+    <img src="" alt="" id="img" width="300">
 
+    <!-- bootstrap进入条，需要引入bootstrap -->
+    <div class="progress" style="width: 500px; margin: 15px">
+        <div class="progress-bar progress-bar-striped active" id="percent"> 
+        </div>
+    </div>
+
+    <script>
+        //1. 获取文件上传按钮
+        var btnUpload = document.querySelector('#btnUpload');
+        //2. 为按钮绑定单机事件处理函数
+        btnUpload.addEventListener('click', function() {
+            //3. 获取用户选择的文件列表
+            var files = document.querySelector('#file1').files;
+            if(files.length <= 0) {
+                return alert('请选择需要上传的文件');
+            }
+            var fd = new FormData();
+            // 将用户选择的文件添加到FormData
+            fd.append('avatar', files[0]);
+
+            var xhr = new XMLHttpRequest();
+
+            // 计算文件上传进度
+            // 1.监听xhr.upload的onprogress事件
+            xhr.upload.onprogress = function(e) {
+                // e.lengthComputeable 是一个布尔值，判断上传文件是否有可计算的长度
+                if(e.lengthComputable) {
+                    //e.loaded是已传输字节
+                    //e.total是总字节
+                    var percentComplete = Math.ceil((e.loaded/e.total)*100);
+                }
+                var percent = document.querySelector('#percent');
+                percent.innerHTML = percentComplete + '%';
+                percent.style.width = percentComplete + '%'
+            }
+            // 2.监听是否上传完成
+            xhr.upload.onload = function() {
+                document.querySelector('#percent').className = 'progress-bar progress-bar-success';
+            }
+
+            xhr.open('POST', 'http://www.liulongbin.top:3006/api/upload/avatar');
+            xhr.send(fd);
+
+            xhr.onreadystatechange = function() {
+                if(xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if(data.status === 200){
+                        // 上传成功
+                        document.querySelector('#img').src = 'http://www.liulongbin.top:3006' + data.url;
+                    }else {
+                        // 上传失败，打印错误信息
+                        console.log('上传失败') + data.message;
+                    }
+                }
+            }
+        })
+    </script>
+
+</body>
 ```
+
+## 基于axios发起AJAX请求
+
+axios是只专注于**网络数据请求**的库，相对于 XMLHttpRequest 和 JQuery 的库更加轻量化。
+
+###  axios发起GET请求
+
+发起GET请求的语法：`axios.get('url', {params: {/* 参数 */}}).then(callback)`
+
+案例：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <button id="btnGet">发起GET请求</button>
+    
+    <script>
+        var btnGet = document.querySelector('#btnGet');
+        btnGet.addEventListener('click', function() {
+            var url = "http://www.liulongbin.top:3006/api/get";
+            var paramsObj = {name: 'zs', age: 20}
+            axios.get(url, {params: paramsObj}).then(function(res) {
+                console.log(res);
+            })
+        })
+    </script>
+</body>
+</html>
+```
+
+### axios发起POST请求
+
+发起POST请求语法：`axios.post('url', {/* 参数 */}).then(callback)`
+
+案例：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <button id="btnPost">发起POST请求</button>
+    
+    <script>
+        var btnPost = document.querySelector('#btnPost');
+        btnPost.addEventListener('click', function() {
+            var url = "http://www.liulongbin.top:3006/api/post";
+            var data = {address: '南京', loacation: '鼓楼区'};
+            axios.post(url, data).then(function(res) {
+                var result = res.data;
+                console.log(result);
+            })
+        })
+    </script>
+</body>
+</html>
+```
+
+### 直接使用axios发起请求
+
+用法如下：
+
+```javascript
+axios({
+    method: '',
+    url: '',
+    data: {/* POST参数 */}
+    params: {/* GET参数 */}
+}).then(callback)
+```
+
+注意，POST请求只能用 **data** 传递数据，GET请求只能用 **params** 传递参数。
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <input type="file" name="" id="file1">
+    <button id="btnUpload">上传</button>
+    <img src="" alt="" id="img" width="300">
+
+    <script>
+        var btnUpload = document.querySelector('#btnUpload');
+        btnUpload.addEventListener('click', function() {
+            var files = document.querySelector('#file1').files;
+            if (files.length <= 0) {
+                return alert('请选择需要上传的文件');
+            }
+            var fd = new FormData();
+            // 将用户选择的文件添加到FormData
+            fd.append('avatar', files[0]);
+            axios({
+                method: 'POST',
+                url: 'http://www.liulongbin.top:3006/api/upload/avatar',
+                data: fd
+            }).then(function (res) {
+                console.log(res.data);
+                if(res.data.status === 200) {
+                    var img = document.querySelector('#img');
+                    img.src = 'http://www.liulongbin.top:3006' + res.data.url;
+                }
+            })
+        })
+    </script>
+    
+</body>
+</html>
